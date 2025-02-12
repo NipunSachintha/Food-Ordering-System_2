@@ -1,7 +1,7 @@
 const express = require('express')
 
 const cors = require('cors');
-
+const dotenv = require('dotenv');
 
 const app = express()
 
@@ -21,7 +21,7 @@ app.use('/api/orders',orderRoute);
 app.use('/api/admin',adminRoute);
 
 
-const PORT = 3000
+const PORT =process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
