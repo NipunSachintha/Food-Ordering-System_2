@@ -9,6 +9,7 @@ const Kitchen = () => {
     const fetchOrders = async () => {
       try {
         const data = await getOrders();
+        //console.log(data);
         setOrders(data);
       } catch (error) {
         console.error(error);
@@ -19,7 +20,7 @@ const Kitchen = () => {
     fetchOrders();
   }, []);
 
-  console.log(error)
+ 
 
   if (error) {
     console.log('hi error');
@@ -30,10 +31,10 @@ const Kitchen = () => {
 
   const aggregatedItems = activeOrders.reduce((acc, order) => {
     order.items.forEach((item) => {
-      if (acc[item.item]) {
-        acc[item.item] += item.quantity;
+      if (acc[item.name]) {
+        acc[item.name] += item.quantity;
       } else {
-        acc[item.item] = item.quantity;
+        acc[item.name] = item.quantity;
       }
     });
     return acc;
@@ -42,7 +43,7 @@ const Kitchen = () => {
   const handleCompleteOrder = (orderId) => {
     setOrders((prevOrders) =>
       prevOrders.map((order) =>
-        order.id === orderId ? { ...order, status: "completed" } : order
+        order._id === orderId ? { ...order, status: "completed" } : order
       )
     );
   };
@@ -71,28 +72,28 @@ const Kitchen = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {activeOrders.map((order) => (
           <div
-            key={order.id}
+            key={order._id}
             className="bg-white rounded-lg shadow-lg overflow-hidden"
           >
             <div className="p-4 border-b">
               <h3 className="font-medium text-sm break-all">
-                Order #{order.id}
+                Order #{order._id}
               </h3>
             </div>
             <div className="p-4">
               <div className="space-y-2">
                 {order.items.map((item, index) => (
                   <div key={index} className="text-sm">
-                    {item.item} x{item.quantity}
+                    {item.name} x{item.quantity}
                   </div>
                 ))}
                 <div className="mt-4 space-y-1">
-                  <div className="text-sm">Status: {order.status}</div>
-                  <div className="text-sm">Time: {order.time}</div>
+                  <div className="text-sm">Status: {order.isComplete?'Complete':'Pending'}</div>
+                  <div className="text-sm">Time: {new Date(order.time).toLocaleTimeString()}</div>
                 </div>
               </div>
               <button
-                onClick={() => handleCompleteOrder(order.id)}
+                onClick={() => handleCompleteOrder(order._id)}
                 className="mt-4 w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-colors"
               >
                 Complete Order
