@@ -11,12 +11,14 @@ app.use(cors());
 
 
 const orderRoute=require('./routes/orderRoute');
+const adminRoute=require('./routes/adminRoute');
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
 app.use('/api/orders',orderRoute);
+app.use('/api/admin',adminRoute);
 
 
 const PORT = 3000
