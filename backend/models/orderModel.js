@@ -12,7 +12,8 @@ const posSchema = new mongoose.Schema({
     ],
     total: { type: Number, required: true },
     isComplete: {type: Boolean,required: true, default: false},
-    time: { type: Date, required: true }
+    time: { type: Date, required: true },
+    completedAt: { type: Date, default: null }
 });
 
 const Order = mongoose.model('Order', posSchema);

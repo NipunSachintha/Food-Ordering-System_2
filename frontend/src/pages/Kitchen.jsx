@@ -9,7 +9,6 @@ const Kitchen = () => {
     const fetchOrders = async () => {
       try {
         const data = await getOrders();
-        //console.log(data);
         setOrders(data);
       } catch (error) {
         console.error(error);
@@ -19,8 +18,6 @@ const Kitchen = () => {
 
     fetchOrders();
   }, []);
-
- 
 
   if (error) {
     console.log('hi error');
@@ -73,28 +70,28 @@ const Kitchen = () => {
         {activeOrders.map((order) => (
           <div
             key={order._id}
-            className="bg-white rounded-lg shadow-lg overflow-hidden"
+            className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col"
           >
             <div className="p-4 border-b">
               <h3 className="font-medium text-sm break-all">
                 Order #{order._id}
               </h3>
             </div>
-            <div className="p-4">
-              <div className="space-y-2">
+            <div className="p-4 flex flex-col flex-grow">
+              <div className="space-y-2 flex-grow">
                 {order.items.map((item, index) => (
                   <div key={index} className="text-sm">
                     {item.name} x{item.quantity}
                   </div>
                 ))}
                 <div className="mt-4 space-y-1">
-                  <div className="text-sm">Status: {order.isComplete?'Complete':'Pending'}</div>
+                  <div className="text-sm">Status: {order.isComplete ? 'Complete' : 'Pending'}</div>
                   <div className="text-sm">Time: {new Date(order.time).toLocaleTimeString()}</div>
                 </div>
               </div>
               <button
                 onClick={() => handleCompleteOrder(order._id)}
-                className="mt-4 w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-colors"
+                className="mt-auto w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-colors"
               >
                 Complete Order
               </button>
