@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getOrders } from "../actions/OrderActions";
 import io from "socket.io-client";
+import {completeOrder} from "../actions/OrderActions";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -38,7 +39,7 @@ const Kitchen = () => {
     return <div>Error: {error.message}</div>;
   }
 
-  const activeOrders = orders.filter((order) => order.status !== "completed");
+  const activeOrders = orders.filter((order) => order.isComplete !== true);
 
   const aggregatedItems = activeOrders.reduce((acc, order) => {
     order.items.forEach((item) => {
@@ -51,12 +52,18 @@ const Kitchen = () => {
     return acc;
   }, {});
 
-  const handleCompleteOrder = (orderId) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order._id === orderId ? { ...order, status: "completed" } : order
-      )
-    );
+  const handleCompleteOrder = async (orderId) => {
+    try {
+      await completeOrder(orderId);
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === orderId ? { ...order, isComplete: true } : order
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      setError(error);
+    }
   };
 
   return (

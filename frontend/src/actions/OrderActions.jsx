@@ -23,3 +23,13 @@ export const placeOrder = async (order) => {
   }
 }
 
+
+export const completeOrder = async (_id) => {
+  console.log(_id);
+  try {
+    const response = await axiosInstance.post("/api/orders/completeOrderByGivenId",{_id});
+    return response.data; // Ensure this is an array
+  } catch (error) {
+    throw error;
+  }
+};

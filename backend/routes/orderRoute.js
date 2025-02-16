@@ -1,5 +1,6 @@
 const express = require('express');
 const Order = require('../models/orderModel');
+const router = require('./foodRoute');
 
 module.exports = (io) => {
   const router = express.Router();
@@ -7,7 +8,7 @@ module.exports = (io) => {
   // Define your routes here
   router.get('/getInCompleteOrders', async (req, res) => {
     try {
-      const orders = await Order.find({}).sort({ time: -1 });
+      const orders = await Order.find({isComplete:false}).sort({ time: -1 });
       res.json(orders);
     } catch (err) {
       res.json({ message: err });
@@ -24,6 +25,27 @@ module.exports = (io) => {
       res.json({ message: err });
     }
   });
+  router.post('/completeOrderByGivenId', async (req, res) => {
+    console.log(req.body);
+    try {
+      const order = await Order.findById(req.body._id);
+      console.log(order);
+      order.isComplete = true;
+      await order.save();
+      res.json({ message: 'Order completed successfully' });
+    } catch (err) {
+      res.json({ message: err });
+    }
+  
+  }
+  );
+
 
   return router;
 };
+
+
+
+
+
+

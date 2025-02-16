@@ -24,6 +24,7 @@ const db = require('./db');
 
 const orderRoute=require('./routes/orderRoute')(io);
 const adminRoute=require('./routes/adminRoute');
+const foodRoute=require('./routes/foodRoute');
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
@@ -31,6 +32,7 @@ app.get('/', (request, response) => {
 
 app.use('/api/orders',orderRoute);
 app.use('/api/admin',adminRoute);
+app.use('/api/food',foodRoute);
 
 
 io.on('connection', (socket) => {

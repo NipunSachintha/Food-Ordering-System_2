@@ -47,7 +47,7 @@ const PreviousOrdersTab = () => {
               <tr key={order._id} className="border-b">
                 <td className="p-4 text-gray-600">{order._id}</td>
                 <td className="p-4">{order.items.map(item => `${item.name} x${item.quantity}`).join(', ')}</td>
-                <td className="p-4">${order.total.toFixed(2)}</td>
+                <td className="p-4">Rs.{order.total.toFixed(2)}</td>
                 <td className="p-4">{order.status}</td>
                 <td className="p-4">{order.time}</td>
                 <td className="p-4">

@@ -1,25 +1,31 @@
 
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {placeOrder} from "../actions/OrderActions";
+import {getFoodItems} from "../actions/FoodActions";
 
 const NewOrderTab = () => {
-    const [menuItems] = useState([
-      { _id: "507f1f77bcf86cd799439011", name: "Original Recipe Chicken", price: 400, category: "Chicken" },
-      { _id: "507f1f77bcf86cd799439012", name: "Zinger Burger", price: 500, category: "Burgers" },
-      { _id: "507f1f77bcf86cd799439013", name: "Fries", price: 200, category: "Sides" },
-      { _id: "507f1f77bcf86cd799439014", name: "Spicy Wings", price: 450, category: "Chicken" },
-      { _id: "507f1f77bcf86cd799439015", name: "Chicken Popcorn", price: 300, category: "Chicken" },
-      { _id: "507f1f77bcf86cd799439016", name: "Veggie Burger", price: 400, category: "Burgers" },
-      { _id: "507f1f77bcf86cd799439017", name: "Coleslaw", price: 150, category: "Sides" },
-      { _id: "507f1f77bcf86cd799439018", name: "Mashed Potatoes", price: 200, category: "Sides" },
-      { _id: "507f1f77bcf86cd799439019", name: "Gravy", price: 100, category: "Sides" },
-      { _id: "507f1f77bcf86cd799439020", name: "Soft Drink", price: 150, category: "Drinks" },
-      { _id: "507f1f77bcf86cd799439021", name: "Milkshake", price: 300, category: "Drinks" },
-    ]);
+    const [menuItems,setMenuItems] = useState([]);
 
       const [currentOrder, setCurrentOrder] = useState([]);
       const totalPrice = currentOrder.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const [error, setError] = useState(null);
+
+
+
+      useEffect(() => {
+          const fetchFoodItems = async () => {
+            try {
+              const data = await getFoodItems();
+              setMenuItems(data);
+            } catch (error) {
+              console.error(error);
+              setError(error);
+            }
+          };
+      
+          fetchFoodItems();
+          
+        }, []);
 
       const submitOrder = async () => {
         if (currentOrder.length === 0) return;
@@ -52,6 +58,12 @@ const NewOrderTab = () => {
           setCurrentOrder([...currentOrder, { ...item, quantity: 1 }]);
         }
       };
+
+      const removeFromOrder = (itemId) => {
+        setCurrentOrder(currentOrder.filter((item) => item._id !== itemId));
+      };
+    
+      
     
 
 
