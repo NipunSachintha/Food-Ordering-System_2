@@ -25,12 +25,27 @@ const Kitchen = () => {
     };
 
     fetchOrders();
+
     socket.on("newOrder", (order) => {
       setOrders((prevOrders) => [order, ...prevOrders]);
     });
 
+    socket.on("completeOrderId", (id) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === id ? { ...order, isComplete: true } : order
+        )
+      );
+    });
+    
+    socket.on("cancelOrderId", (id) => {
+      setOrders((prevOrders) => prevOrders.filter((order) => order._id !== id));
+    });
+
     return () => {
       socket.off("newOrder");
+      socket.off("completeOrderId");
+      socket.off("cancelOrderId");
     };
   }, []);
 

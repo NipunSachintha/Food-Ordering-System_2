@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const FoodItem = require('../models/Foodmodel');
 
 const Ausers = [
   { name: "John Doe", email: "john@example.com", role: "admin" },
@@ -21,9 +22,12 @@ router.get("/getUsers", async (req, res) => {
 });
 
 router.get("/getFoodItems", async (req, res) => {
-  //console.log('ok')
-
-  res.json(foodItems);
+  try {
+    const foodItems = await FoodItem.find({});
+    res.json(foodItems);
+} catch (err) {
+    res.json({ message: err });
+}
 });
 
 module.exports = router;

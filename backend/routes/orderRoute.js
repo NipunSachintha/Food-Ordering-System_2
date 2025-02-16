@@ -8,7 +8,7 @@ module.exports = (io) => {
   // Define your routes here
   router.get('/getInCompleteOrders', async (req, res) => {
     try {
-      const orders = await Order.find({isComplete:false}).sort({ time: -1 });
+      const orders = await Order.find({isComplete:false}).sort({ time: 1 });
       res.json(orders);
     } catch (err) {
       res.json({ message: err });
@@ -32,6 +32,7 @@ module.exports = (io) => {
       
       order.isComplete = true;
       await order.save();
+      io.emit('completeOrderId',req.body._id); // Emit the complete
       res.json({ message: 'Order completed successfully' });
     } catch (err) {
       res.json({ message: err });
@@ -39,6 +40,22 @@ module.exports = (io) => {
   
   }
   );
+
+  router.post('/cancelOrder', async (req, res) => {
+    try {
+      const order = await Order.findById(req.body._id);
+      if (order) {
+        await Order.findByIdAndDelete(req.body._id); // Delete the order
+        io.emit('cancelOrderId', req.body._id); // Emit the cancel order event
+        res.json({ message: 'Order cancelled and deleted successfully' });
+      } else {
+        res.status(404).json({ message: 'Order not found' });
+      }
+    } catch (err) {
+      res.json({ message: err });
+    }
+  });
+
 
 
   return router;
