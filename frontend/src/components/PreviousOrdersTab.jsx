@@ -1,47 +1,48 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import { getOrders, completeOrder,cancelOrder } from "../actions/OrderActions";
 const PreviousOrdersTab = () => {
-    const [previousOrders, setPreviousOrders] = useState([{
-        "id": "aekka8qyru4",
-        "items": [
-            {
-                "id": 1,
-                "name": "Original Recipe Chicken",
-                "price": 3.99,
-                "category": "Chicken",
-                "quantity": 1
-            },
-            {
-                "id": 2,
-                "name": "Zinger Burger",
-                "price": 4.99,
-                "category": "Burgers",
-                "quantity": 1
-            },
-            {
-                "id": 3,
-                "name": "Fries",
-                "price": 1.99,
-                "category": "Sides",
-                "quantity": 1
-            },
-            {
-                "id": 6,
-                "name": "Veggie Burger",
-                "price": 3.99,
-                "category": "Burgers",
-                "quantity": 4
-            }
-        ],
-        "total": 26.93,
-        "status": "Pending",
-        "time": "07:19:44"
-    }]);
+  const [previousOrders, setPreviousOrders] = useState([]);
+  const [error, setError] = useState(null);
 
-    
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const data = await getOrders();
+        //console.log(data);
+        setPreviousOrders(data);
+      } catch (error) {
+        console.error(error);
+        setError(error);
+      }
+    };
 
-    return(
-        <div>
+    fetchOrders();
+  }, []);
+
+  const handleCompleteOrder = async (orderId) => {
+    try {
+      const response = await completeOrder(orderId);
+      setPreviousOrders(
+        previousOrders.filter((order) => order._id !== orderId)
+      );
+    } catch (error) {
+      console.error(error);
+      setError(error);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      await cancelOrder(orderId);
+      setPreviousOrders(previousOrders.filter((order) => order._id !== orderId));
+    } catch (error) {
+      console.error(error);
+      setError(error);
+    }
+  };
+
+  return (
+    <div>
       <h2 className="text-2xl font-bold mb-4">Previous Orders</h2>
       <div className="bg-white rounded-lg shadow">
         <table className="w-full">
@@ -57,15 +58,28 @@ const PreviousOrdersTab = () => {
           </thead>
           <tbody>
             {previousOrders.map((order) => (
-              <tr key={order.id} className="border-b">
-                <td className="p-4 text-gray-600">{order.id}</td>
-                <td className="p-4">{order.items.map(item => `${item.name} x${item.quantity}`).join(', ')}</td>
-                <td className="p-4">${order.total.toFixed(2)}</td>
+              <tr key={order._id} className="border-b">
+                <td className="p-4 text-gray-600">{order._id}</td>
+                <td className="p-4">
+                  {order.items
+                    .map((item) => `${item.name} x${item.quantity}`)
+                    .join(", ")}
+                </td>
+                <td className="p-4">Rs.{order.total.toFixed(2)}</td>
                 <td className="p-4">{order.status}</td>
                 <td className="p-4">{order.time}</td>
                 <td className="p-4">
-                  <button className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">
-                    Mark as Completed
+                  <button
+                    onClick={() => handleCompleteOrder(order._id)}
+                    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+                  >
+                    Complete
+                  </button>
+                  <button
+                    onClick={() => handleCancelOrder(order._id)}
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-400 ml-2"
+                  >
+                    Cancel
                   </button>
                 </td>
               </tr>
@@ -74,6 +88,6 @@ const PreviousOrdersTab = () => {
         </table>
       </div>
     </div>
-    )
-  };
+  );
+};
 export default PreviousOrdersTab;

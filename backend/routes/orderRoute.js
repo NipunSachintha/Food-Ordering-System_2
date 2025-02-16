@@ -1,65 +1,68 @@
 const express = require('express');
-const router = express.Router();
+const Order = require('../models/orderModel');
+const router = require('./foodRoute');
 
-const order = [
-  {
-    id: "2527858-c989-44e3-a397-4b3defcef377",
-    items: [
-      { item: "Original Recipe Chicken", quantity: 2 },
-      { item: "Zinger Burger", quantity: 1 },
-    ],
-    status: "pending",
-    time: "2025-02-12T11:36:48.000Z",
-  },
-  {
-    id: "c4145130-282a-49c1-8954-b955b0e1ce4e",
-    items: [{ item: "Fries", quantity: 5 }],
-    status: "pending",
-    time: "2025-02-12T11:36:48.000Z",
-  },
-  {
-    id: "82315efb-3d64-476f-a624-53fabf057c32",
-    items: [
-      { item: "Original Recipe Chicken", quantity: 2 },
-      { item: "Zinger Burger", quantity: 2 },
-      { item: "Fries", quantity: 1 },
-    ],
-    status: "pending",
-    time: "2025-02-12T11:36:48.000Z",
-  },
-  {
-    id: "d4e5f6a7-8b9c-4d1e-9a2b-7c8d9e0f1a2b",
-    items: [
-      { item: "Zinger Burger", quantity: 3 },
-      { item: "Fries", quantity: 2 },
-    ],
-    status: "pending",
-    time: "2025-02-12T11:36:48.000Z",
-  },
-  {
-    id: "e7f8g9h0-1i2j-3k4l-5m6n-7o8p9q0r1s2t",
-    items: [
-      { item: "Original Recipe Chicken", quantity: 4 },
-      { item: "Fries", quantity: 3 },
-    ],
-    status: "pending",
-    time: "2025-02-12T11:36:48.000Z",
-  },
-];
+module.exports = (io) => {
+  const router = express.Router();
 
+  // Define your routes here
+  router.get('/getInCompleteOrders', async (req, res) => {
+    try {
+      const orders = await Order.find({isComplete:false}).sort({ time: 1 });
+      res.json(orders);
+    } catch (err) {
+      res.json({ message: err });
+    }
+  });
 
-// Define your routes here
-router.get('/getInCompleteOrders', async (req, res) => {
-  //console.log('ok')
-  res.json(order);
-}
-);
+  router.post('/placeOrder', async (req, res) => {
+    try {
+      const order = new Order(req.body);
+      await order.save();
+      io.emit('newOrder', order); // Emit the new order event
+      res.json({ message: 'Order placed successfully' });
+    } catch (err) {
+      res.json({ message: err });
+    }
+  });
+  router.post('/completeOrderByGivenId', async (req, res) => {
+    
+    try {
+      const order = await Order.findById(req.body._id);
+      
+      order.isComplete = true;
+      await order.save();
+      io.emit('completeOrderId',req.body._id); // Emit the complete
+      res.json({ message: 'Order completed successfully' });
+    } catch (err) {
+      res.json({ message: err });
+    }
+  
+  }
+  );
 
-
-router.post('/placeOrder', async (req, res) => {
-  //console.log(req.body);
-  res.json({message: 'Order placed successfully'});
-})
+  router.post('/cancelOrder', async (req, res) => {
+    try {
+      const order = await Order.findById(req.body._id);
+      if (order) {
+        await Order.findByIdAndDelete(req.body._id); // Delete the order
+        io.emit('cancelOrderId', req.body._id); // Emit the cancel order event
+        res.json({ message: 'Order cancelled and deleted successfully' });
+      } else {
+        res.status(404).json({ message: 'Order not found' });
+      }
+    } catch (err) {
+      res.json({ message: err });
+    }
+  });
 
 
-module.exports = router;
+
+  return router;
+};
+
+
+
+
+
+

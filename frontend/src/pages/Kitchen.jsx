@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { getOrders } from "../actions/OrderActions";
+import io from "socket.io-client";
+import {completeOrder} from "../actions/OrderActions";
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+
+const socket = io(backendUrl);
 
 const Kitchen = () => {
+
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState(null);
 
@@ -17,34 +25,60 @@ const Kitchen = () => {
     };
 
     fetchOrders();
-  }, []);
 
-  console.log(error)
+    socket.on("newOrder", (order) => {
+      setOrders((prevOrders) => [order, ...prevOrders]);
+    });
+
+    socket.on("completeOrderId", (id) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === id ? { ...order, isComplete: true } : order
+        )
+      );
+    });
+    
+    socket.on("cancelOrderId", (id) => {
+      setOrders((prevOrders) => prevOrders.filter((order) => order._id !== id));
+    });
+
+    return () => {
+      socket.off("newOrder");
+      socket.off("completeOrderId");
+      socket.off("cancelOrderId");
+    };
+  }, []);
 
   if (error) {
     console.log('hi error');
     return <div>Error: {error.message}</div>;
   }
 
-  const activeOrders = orders.filter((order) => order.status !== "completed");
+  const activeOrders = orders.filter((order) => order.isComplete !== true);
 
   const aggregatedItems = activeOrders.reduce((acc, order) => {
     order.items.forEach((item) => {
-      if (acc[item.item]) {
-        acc[item.item] += item.quantity;
+      if (acc[item.name]) {
+        acc[item.name] += item.quantity;
       } else {
-        acc[item.item] = item.quantity;
+        acc[item.name] = item.quantity;
       }
     });
     return acc;
   }, {});
 
-  const handleCompleteOrder = (orderId) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId ? { ...order, status: "completed" } : order
-      )
-    );
+  const handleCompleteOrder = async (orderId) => {
+    try {
+      await completeOrder(orderId);
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === orderId ? { ...order, isComplete: true } : order
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      setError(error);
+    }
   };
 
   return (
@@ -71,29 +105,29 @@ const Kitchen = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {activeOrders.map((order) => (
           <div
-            key={order.id}
-            className="bg-white rounded-lg shadow-lg overflow-hidden"
+            key={order._id}
+            className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col"
           >
             <div className="p-4 border-b">
               <h3 className="font-medium text-sm break-all">
-                Order #{order.id}
+                Order #{order._id}
               </h3>
             </div>
-            <div className="p-4">
-              <div className="space-y-2">
+            <div className="p-4 flex flex-col flex-grow">
+              <div className="space-y-2 flex-grow">
                 {order.items.map((item, index) => (
                   <div key={index} className="text-sm">
-                    {item.item} x{item.quantity}
+                    {item.name} x{item.quantity}
                   </div>
                 ))}
                 <div className="mt-4 space-y-1">
-                  <div className="text-sm">Status: {order.status}</div>
-                  <div className="text-sm">Time: {order.time}</div>
+                  <div className="text-sm">Status: {order.isComplete ? 'Complete' : 'Pending'}</div>
+                  <div className="text-sm">Time: {new Date(order.time).toLocaleTimeString()}</div>
                 </div>
               </div>
               <button
-                onClick={() => handleCompleteOrder(order.id)}
-                className="mt-4 w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-colors"
+                onClick={() => handleCompleteOrder(order._id)}
+                className="mt-auto w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-colors"
               >
                 Complete Order
               </button>

@@ -18,8 +18,8 @@ const MenuManagement = () => {
     fetchOrders();
   }, []);
 
-  const handleDeleteUser = (email) => {
-    setUsers((prev) => prev.filter((user) => user.email !== email));
+  const handleDeleteItem = (id) => {
+    setFoodItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
@@ -59,7 +59,7 @@ const MenuManagement = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDeleteUser(user.email)}
+                    onClick={() => handleDeleteItem(item.id)}
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ml-2"
                   >
                     Delete
