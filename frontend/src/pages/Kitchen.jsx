@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { getOrders } from "../actions/OrderActions";
+import io from "socket.io-client";
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+
+const socket = io(backendUrl);
 
 const Kitchen = () => {
+
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState(null);
 
@@ -17,6 +24,13 @@ const Kitchen = () => {
     };
 
     fetchOrders();
+    socket.on("newOrder", (order) => {
+      setOrders((prevOrders) => [order, ...prevOrders]);
+    });
+
+    return () => {
+      socket.off("newOrder");
+    };
   }, []);
 
   if (error) {
