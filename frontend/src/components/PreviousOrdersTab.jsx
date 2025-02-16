@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from "react";
-import { getOrders } from "../actions/OrderActions";
+import { getOrders,completeOrder } from "../actions/OrderActions";
 const PreviousOrdersTab = () => {
     const [previousOrders, setPreviousOrders] = useState([]);
     const [error, setError] = useState(null);
@@ -20,8 +20,14 @@ const PreviousOrdersTab = () => {
       }, []);
     
 
-      const handleCompleteOrder = (orderId) => {
-        setPreviousOrders(previousOrders.filter((order) => order._id !== orderId));
+      const handleCompleteOrder = async (orderId) => {
+        try {
+          const response = await completeOrder(orderId);
+          setPreviousOrders(previousOrders.filter((order) => order._id !== orderId));
+        } catch (error) {
+          console.error(error);
+          setError(error);
+        }
       };
       
 

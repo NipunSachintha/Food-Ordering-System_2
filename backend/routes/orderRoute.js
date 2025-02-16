@@ -26,10 +26,10 @@ module.exports = (io) => {
     }
   });
   router.post('/completeOrderByGivenId', async (req, res) => {
-    console.log(req.body);
+    
     try {
       const order = await Order.findById(req.body._id);
-      console.log(order);
+      
       order.isComplete = true;
       await order.save();
       res.json({ message: 'Order completed successfully' });
