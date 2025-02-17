@@ -1,16 +1,38 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 const LogIn = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Handle login logic here
-        console.log('Username:', username);
-        console.log('Password:', password);
-    };
+        axios.post('http://localhost:3000/api/user/login',{username,password},{withCredentials:true})
+        .then(result => {
+          console.log(result.data)
+          if(result.data.message === "Login Success"){
+            //localStorage.setItem('token',result.data.access_token)
+            Cookies.set('accessToken', result.data.access_token, { secure: true, sameSite: 'Strict' });
+          }
+          // user role navigation handling
+          const role = result.data.role;
+          if(role === "admin"){
+            navigate('/admin');
+          }else if(role === "cashier"){
+            navigate('/pos');
+            }else if(role === "chef"){
+                navigate('/kitchen');
+            }else{
+                navigate('/');
+            }
+        })
+        .catch(err => console.log(err))
+        
+    }
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
