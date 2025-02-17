@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const router = express.Router();
-const UserItem = require('../models/Usermodel');
+const UserItem = require('../models/UserModel');
 
 const JWT_SECRET = 'thee_kade';
 
