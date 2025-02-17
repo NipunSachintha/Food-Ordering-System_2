@@ -14,4 +14,19 @@ router.get('/getFoodItems', async (req, res) => {
     }
 });
 
+router.post('/addFoodItem', async (req, res) => {
+    const foodItem = new FoodItem({
+        name: req.body.name,
+        price: req.body.price,
+        category: req.body.category
+    });
+
+    try {
+        const savedFoodItem = await foodItem.save();
+        res.json(savedFoodItem);
+    } catch (err) {
+        res.json({ message: err });
+    }
+});
+
 module.exports = router;
