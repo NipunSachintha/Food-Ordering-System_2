@@ -8,6 +8,7 @@ const MenuManagement = () => {
     const fetchOrders = async () => {
       try {
         const data = await getFoodItems();
+        //console.log(data);
         setFoodItems(data);
       } catch (error) {
         console.error(error);
@@ -18,14 +19,16 @@ const MenuManagement = () => {
     fetchOrders();
   }, []);
 
-  const handleDeleteItem = (id) => {
-    setFoodItems((prev) => prev.filter((item) => item.id !== id));
+  const handleDeleteItem = (_id) => {
+    setFoodItems((prev) => prev.filter((item) => item._id !== _id));
   };
+
+  
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6 bg-white rounded-lg ">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">User Management</h1>
+        <h1 className="text-2xl font-bold">Menu Management</h1>
       </div>
 
       <button
@@ -47,7 +50,7 @@ const MenuManagement = () => {
           </thead>
           <tbody>
             {foodItems.map((item) => (
-              <tr key={item.id} className="border-b">
+              <tr key={item._id} className="border-b">
                 <td className="p-4">{item.name}</td>
                 <td className="p-4">{item.price}</td>
                 <td className="p-4">{item.category}</td>
@@ -59,7 +62,7 @@ const MenuManagement = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDeleteItem(item.id)}
+                    onClick={() => handleDeleteItem(item._id)}
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ml-2"
                   >
                     Delete
