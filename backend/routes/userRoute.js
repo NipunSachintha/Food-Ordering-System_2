@@ -7,18 +7,6 @@ const UserItem = require('../models/UserModel');
 
 const JWT_SECRET = 'thee_kade';
 
-/*router.post('/login', async (req, res) => {
-    try {
-        const user = await UserItem.find({username:req.body.username,password:req.body.password});
-        res.json(user);
-
-    } catch (err) {
-        res.json({ message: err });
-    }
-});
-*/
-
-
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try{
@@ -42,5 +30,18 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
       }
   });
+
+
+router.post('/register', async (req, res) => {
+    const { username, user_password, role } = req.body;
+    try {
+        password = await bcrypt.hash(user_password, 10);
+        const user = await UserItem.create({ username, password, role });
+        res.json({ message: 'User created', user });
+    } catch (error) {
+        console.error('Error during registration:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 module.exports = router;
