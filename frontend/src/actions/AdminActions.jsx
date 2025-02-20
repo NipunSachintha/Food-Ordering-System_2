@@ -1,4 +1,7 @@
 import axiosInstance from "../utils/AxiosInstance";
+import Cookies from "js-cookie";
+import { jwtDecode } from 'jwt-decode';
+import { head } from "../../../backend/routes/userRoute";
 
 // to get all foodItems From backend
 export const getFoodItems = async () => {
@@ -50,24 +53,30 @@ export const deleteFoodItem = async (id) => {
 
 // to get all the users instead of admin users
 export const getUsers = async () => {
-  try {
-    const response = await axiosInstance.get("/api/admin/getUsers");
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
 
-export const addUser = async (data) => {
-  console.log(data);
-  try{
-    const response = await axiosInstance.post("/api/user/addUser", data);
-    return response.data;
-  }
-  catch(error){
-    throw error;
+  const token = Cookies.get('accessToken');
+  if(token){
+    try{
+      const decodedToken = jwtDecode(token);
+      axiosInstance.get('/api/admin/getUsers',{
+        headers: {
+          'Authorization' : `Bearer ${token}`
+        }
+      })
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    } catch(error){
+      console.log(error);
+    }
+  } else {
+    console.log('No token found');
   }
 };
+    
 
 export const deleteUser = async (id) => {
   console.log(id);
