@@ -48,5 +48,20 @@ router.delete('/deleteFoodItem/:id', async (req, res) => {
   }
 });
 
+router.post("/addFoodItem", async (req, res) => {
+  const { name, price, category } = req.body;
+  const foodItem = new FoodItem({
+    name,
+    price,
+    category
+  });
+
+  try {
+    const savedFoodItem = await foodItem.save();
+    res.json(savedFoodItem);
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
 
 module.exports = router;

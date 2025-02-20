@@ -14,6 +14,7 @@ const MenuManagement = () => {
   const [editedName, setEditedName] = useState("");
   const [editedPrice, setEditedPrice] = useState("");
   const [editedCategory, setEditedCategory] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -50,31 +51,43 @@ const MenuManagement = () => {
       setEditedName(item.name);
       setEditedPrice(item.price);
       setEditedCategory(item.category);
+      setIsEditMode(true);
       setIsModalOpen(true);
     }
   };
 
   const handleSaveChanges = async () => {
     try {
-      await updateFoodItem({
-        _id: currentItem._id,
-        name: editedName,
-        price: editedPrice,
-        category: editedCategory,
-      });
-      setFoodItems((prev) =>
-        prev.map((item) =>
-          item._id === currentItem._id
-            ? {
-                ...item,
-                name: editedName,
-                price: editedPrice,
-                category: editedCategory,
-              }
-            : item
-        )
-      );
-      setIsModalOpen(false);
+      if(isEditMode){
+        await updateFoodItem({
+          _id: currentItem._id,
+          name: editedName,
+          price: editedPrice,
+          category: editedCategory,
+        });
+        setFoodItems((prev) =>
+          prev.map((item) =>
+            item._id === currentItem._id
+              ? {
+                  ...item,
+                  name: editedName,
+                  price: editedPrice,
+                  category: editedCategory,
+                }
+              : item
+          )
+        );
+        setIsModalOpen(false);
+      }
+      else{
+        const newItem = await addFoodItem({
+          name: editedName,
+          price: editedPrice,
+          category: editedCategory,
+        });
+        //setFoodItems((prev) => [...prev, newItem]);
+        setIsModalOpen(false);
+      }
     } catch (error) {
       console.error(error);
       setError(error);
@@ -83,6 +96,10 @@ const MenuManagement = () => {
 
   const handleAddItem = () => {
     setIsModalOpen(true);
+    setIsEditMode(false);
+    setEditedName("");
+    setEditedPrice("");
+    setEditedCategory("");
   }
 
   return (

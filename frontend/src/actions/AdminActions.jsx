@@ -33,7 +33,13 @@ export const getFoodItems = async () => {
     }
   }
   export const addFoodItem = async (data) => {
-    console.log(data);
+    try{
+      const response = await axiosInstance.post("/api/admin/addFoodItem", data);
+      return response.data;
+    }
+    catch(error){
+      throw error;
+    }
   }
 
   export const deleteFoodItem = async (id) => {
