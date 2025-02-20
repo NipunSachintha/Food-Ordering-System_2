@@ -2,15 +2,29 @@ const express = require("express");
 const router = express.Router();
 const FoodItem = require('../models/Foodmodel');
 const User = require('../models/UserModel');
+const authMiddleware = require('../middleware/authMiddleware');
 
 
-
-
+//admin routes for users
 router.get("/getUsers", async (req, res) => {
     const Ausers = await User.find({}).select('username role _id'); // Select only username, role, and _id
     const users = Ausers.filter((user) => user.role !== "admin");
   res.json(users);
 });
+
+router.delete('/deleteUser/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await User.findByIdAndDelete(id);
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    res.json({ message: err });
+  }
+})
+
+
+
+//admin routes for food items
 
 router.get("/getFoodItems", async (req, res) => {
   try {
