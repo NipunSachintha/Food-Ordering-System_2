@@ -21,4 +21,32 @@ router.get("/getFoodItems", async (req, res) => {
 }
 });
 
+router.post("/updateFoodItem", async (req, res) => {
+  const { _id, name, price, category } = req.body;
+  try {
+    const foodItem = await FoodItem.findById(_id);
+    foodItem.name = name;
+    foodItem.price = price;
+    foodItem.category = category;
+    await foodItem.save();
+    res.json({ message: "Item updated successfully" });
+    
+  } catch (err) {
+    res.json({ message: err });
+  }
+}
+);
+
+router.delete('/deleteFoodItem/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+  try {
+    await FoodItem.findByIdAndDelete(id);
+    res.json({ message: "Item deleted successfully" });
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
+
+
 module.exports = router;

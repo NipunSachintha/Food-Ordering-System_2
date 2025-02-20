@@ -22,3 +22,27 @@ export const getFoodItems = async () => {
     }
   };
   
+  export const updateFoodItem = async (data) => {
+    //console.log(data);
+    try{
+      const response = await axiosInstance.post("/api/admin/updateFoodItem", data);
+      return response.data;
+    }
+    catch(error){
+      throw error;
+    }
+  }
+  export const addFoodItem = async (data) => {
+    console.log(data);
+  }
+
+  export const deleteFoodItem = async (id) => {
+    
+    console.log(id);
+    try {
+      const response = await axiosInstance.delete(`/api/admin/deleteFoodItem/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
