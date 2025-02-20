@@ -17,8 +17,8 @@ router.post('/login', async (req, res) => {
         }
   
     
-        //const passwordMatch = await bcrypt.compare(password, user.password);
-        if (password !== user.password) {
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
         return res.status(401).json({ message: 'Invalid credentials' });
         }
   
@@ -45,13 +45,14 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/add-user',
-    authMiddleware(['admin']),
+router.post('/addUser',
+    /*authMiddleware(['admin']),*/
     async (req, res) => {
-        const { username, user_password, role } = req.body;
+        console.log(req.body);
+        const { username, password, role } = req.body;
         try {
-            password = await bcrypt.hash(user_password, 10);
-            const user = await UserItem.create({ username, password, role });
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const user = await UserItem.create({ username, password: hashedPassword, role });
             res.json({ message: 'User created', user });
         } catch (error) {
             console.error('Error during registration:', error);

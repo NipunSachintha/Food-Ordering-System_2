@@ -8,4 +8,4 @@ export const getFoodItems = async () => {
       throw error;
     }
   };
-  
+
