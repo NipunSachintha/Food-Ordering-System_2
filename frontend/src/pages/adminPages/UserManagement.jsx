@@ -29,7 +29,7 @@ const UserManagement = () => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
         await deleteUser(_id);
-        setUsers((prev) => prev.filter((user) => user._id !== _id));
+        //setUsers((prev) => prev.filter((user) => user._id !== _id));
       } catch (error) {
         console.error(error);
         setError(error);
