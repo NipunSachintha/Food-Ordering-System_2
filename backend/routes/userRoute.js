@@ -46,7 +46,7 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/addUser',
-    /*authMiddleware(['admin']),*/
+    authMiddleware(['admin']),
     async (req, res) => {
         console.log(req.body);
         const { username, password, role } = req.body;
