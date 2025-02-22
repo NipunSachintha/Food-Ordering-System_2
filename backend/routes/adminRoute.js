@@ -6,13 +6,13 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 
 //admin routes for users
-router.get("/getUsers", async (req, res) => {
+router.get("/getUsers",authMiddleware(['admin']), async (req, res) => {
     const Ausers = await User.find({}).select('username role _id'); // Select only username, role, and _id
     const users = Ausers.filter((user) => user.role !== "admin");
   res.json(users);
 });
 
-router.delete('/deleteUser/:id', async (req, res) => {
+router.delete('/deleteUser/:id',authMiddleware(['admin']), async (req, res) => {
   const { id } = req.params;
   try {
     await User.findByIdAndDelete(id);
@@ -26,7 +26,7 @@ router.delete('/deleteUser/:id', async (req, res) => {
 
 //admin routes for food items
 
-router.get("/getFoodItems", async (req, res) => {
+router.get("/getFoodItems",authMiddleware(['admin']), async (req, res) => {
   try {
     const foodItems = await FoodItem.find({});
     res.json(foodItems);
@@ -35,7 +35,7 @@ router.get("/getFoodItems", async (req, res) => {
 }
 });
 
-router.post("/updateFoodItem", async (req, res) => {
+router.post("/updateFoodItem",authMiddleware(['admin']), async (req, res) => {
   const { _id, name, price, category } = req.body;
   try {
     const foodItem = await FoodItem.findById(_id);
@@ -51,7 +51,7 @@ router.post("/updateFoodItem", async (req, res) => {
 }
 );
 
-router.delete('/deleteFoodItem/:id', async (req, res) => {
+router.delete('/deleteFoodItem/:id',authMiddleware(['admin']), async (req, res) => {
   const { id } = req.params;
   console.log(id);
   try {
@@ -62,7 +62,7 @@ router.delete('/deleteFoodItem/:id', async (req, res) => {
   }
 });
 
-router.post("/addFoodItem", async (req, res) => {
+router.post("/addFoodItem",authMiddleware(['admin']), async (req, res) => {
   const { name, price, category } = req.body;
   const foodItem = new FoodItem({
     name,

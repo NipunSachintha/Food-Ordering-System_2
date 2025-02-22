@@ -15,6 +15,7 @@ const UserManagement = () => {
     const fetchUsers = async () => {
       try {
         const data = await getUsers();
+        //console.log(data);
         setUsers(data);
       } catch (error) {
         console.error(error);
