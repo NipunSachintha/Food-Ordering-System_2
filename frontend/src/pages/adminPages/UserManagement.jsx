@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getUsers, addUser, deleteUser } from "../../actions/AdminActions";
+import { getUsers, addUser, deleteUser, updateUser } from "../../actions/AdminActions";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -10,12 +10,12 @@ const UserManagement = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('cashier');
+  const [isEditMode, setIsEditMode] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await getUsers();
-        //console.log(data);
         setUsers(data);
       } catch (error) {
         console.error(error);
@@ -30,7 +30,7 @@ const UserManagement = () => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
         await deleteUser(_id);
-        //setUsers((prev) => prev.filter((user) => user._id !== _id));
+        setUsers((prev) => prev.filter((user) => user._id !== _id));
       } catch (error) {
         console.error(error);
         setError(error);
@@ -46,29 +46,69 @@ const UserManagement = () => {
     setRole('cashier');
     setError(null);
     setIsModalOpen(true);
+    setIsEditMode(false);
+  };
+
+  const handleEditUser = (user) => {
+    if (window.confirm("Are you sure you want to edit this user?")) {
+      setCurrentUser(user);
+      setUsername(user.username);
+      setRole(user.role);
+      setPassword('');
+      setConfirmPassword('');
+      setError(null);
+      setIsEditMode(true);
+      setIsModalOpen(true);
+    }
   };
 
   const handleSaveChanges = async () => {
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
     try {
-      const newUser = await addUser({
-        username,
-        password,
-        role,
-      });
-      //setUsers((prev) => [...prev, newUser]);
-      setIsModalOpen(false);
+      if (isEditMode) {
+        await updateUser({
+          _id: currentUser._id,
+          username: username,
+          role: role,
+        });
+        setUsers((prev) =>
+          prev.map((user) =>
+            user._id === currentUser._id
+              ? {
+                  ...user,
+                  username: username,
+                  role: role,
+                }
+              : user
+          )
+        );
+        setIsModalOpen(false);
+      } else {
+        if (password !== confirmPassword) {
+          setError("Passwords do not match");
+          return;
+        }
+        
+        const newUser = await addUser({
+          username,
+          password,
+          role,
+        });
+        setUsers((prev) => [...prev, newUser]);
+        setIsModalOpen(false);
+      }
     } catch (error) {
       console.error(error);
       setError(error);
     }
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setError(null);
+  };
+
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 bg-white rounded-lg ">
+    <div className="w-full max-w-6xl mx-auto p-6 bg-white rounded-lg">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">User Management</h1>
       </div>
@@ -76,7 +116,7 @@ const UserManagement = () => {
       <button
         type="button"
         onClick={handleAddUser}
-        className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+        className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 mb-4"
       >
         Add User
       </button>
@@ -97,7 +137,13 @@ const UserManagement = () => {
                 <td className="p-4">{user._id}</td>
                 <td className="p-4">{user.username}</td>
                 <td className="p-4">{user.role}</td>
-                <td className="p-4">
+                <td className="p-4 space-x-2">
+                  <button
+                    onClick={() => handleEditUser(user)}
+                    className="px-4 py-2 bg-blue-100 text-black rounded hover:bg-blue-200"
+                  >
+                    Edit
+                  </button>
                   <button
                     onClick={() => handleDeleteUser(user._id)}
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
@@ -115,12 +161,14 @@ const UserManagement = () => {
         <div className="fixed inset-0 p-4 flex flex-wrap justify-center items-center w-full h-full z-[1000] before:fixed before:inset-0 before:w-full before:h-full before:bg-[rgba(0,0,0,0.5)] overflow-auto font-[sans-serif]">
           <div className="w-full max-w-lg bg-white shadow-lg rounded-lg p-6 relative">
             <div className="flex items-center pb-3 border-b border-gray-300">
-              <h3 className="text-gray-800 text-xl font-bold flex-1">Add User</h3>
+              <h3 className="text-gray-800 text-xl font-bold flex-1">
+                {isEditMode ? 'Edit User' : 'Add User'}
+              </h3>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="w-3 ml-2 cursor-pointer shrink-0 fill-gray-400 hover:fill-red-500"
                 viewBox="0 0 320.591 320.591"
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
               >
                 <path
                   d="M30.391 318.583a30.37 30.37 0 0 1-21.56-7.288c-11.774-11.844-11.774-30.973 0-42.817L266.643 10.665c12.246-11.459 31.462-10.822 42.921 1.424 10.362 11.074 10.966 28.095 1.414 39.875L51.647 311.295a30.366 30.366 0 0 1-21.256 7.288z"
@@ -143,26 +191,30 @@ const UserManagement = () => {
                 className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
-            <div className="form-group mb-4">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password:</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            <div className="form-group mb-4">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password:</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
+            {!isEditMode && (
+              <>
+                <div className="form-group mb-4">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password:</label>
+                  <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div className="form-group mb-4">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password:</label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </>
+            )}
             <div className="form-group mb-4">
               <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role:</label>
               <select
@@ -178,7 +230,7 @@ const UserManagement = () => {
             </div>
             <div className="flex justify-end">
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
                 className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400 mr-2"
               >
                 Cancel
