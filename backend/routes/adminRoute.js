@@ -78,4 +78,26 @@ router.post("/addFoodItem",authMiddleware(['admin']), async (req, res) => {
   }
 });
 
+router.post("/updateUsers", authMiddleware(['admin']), async (req, res) => {
+  const { _id, username, role } = req.body;
+  
+  try {
+    const userItem = await User.findById(_id);
+    
+    if (!userItem) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    userItem.username = username;
+    userItem.role = role;
+    
+    await userItem.save();
+    
+    res.json({ message: "User details updated successfully" });
+  } catch (err) {
+    console.error('Error updating user:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

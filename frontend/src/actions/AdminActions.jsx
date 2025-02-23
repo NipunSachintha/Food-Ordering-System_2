@@ -120,3 +120,20 @@ export const addUser = async (data) => {
     throw error;
   }
 };
+
+export const updateUser = async (data) => {
+  const token = Cookies.get("accessToken");
+  try {
+    const response = await axiosInstance.post(
+      "/api/admin/updateUsers",
+      data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
