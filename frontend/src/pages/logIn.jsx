@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { useAuth } from '../context/AuthContext';
 
 const LogIn = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const {login} = useAuth();
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -16,7 +18,11 @@ const LogIn = () => {
           console.log(result.data)
           if(result.data.message === "Login Success"){
             //localStorage.setItem('token',result.data.access_token)
-            Cookies.set('accessToken', result.data.access_token, { secure: true, sameSite: 'Strict' });
+            login({
+                username: result.data.username,
+                role: result.data.role,
+                access_token: result.data.access_token
+            });
           }
           // user role navigation handling
           const role = result.data.role;
