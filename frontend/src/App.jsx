@@ -14,8 +14,9 @@ import UnauthorizedPage from "./pages/Unauthorized";
 
 function App() {
   return (
-    <AuthProvider>
+    
     <Router>
+      <AuthProvider>
       <div>
         <Routes>
           <Route path="/register" element={<Register />} />
@@ -29,8 +30,9 @@ function App() {
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
         </Routes>
       </div>
+      </AuthProvider>
     </Router>
-    </AuthProvider>
+    
   );
 }
 
