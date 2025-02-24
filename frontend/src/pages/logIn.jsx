@@ -18,11 +18,9 @@ const LogIn = () => {
           console.log(result.data)
           if(result.data.message === "Login Success"){
             //localStorage.setItem('token',result.data.access_token)
-            login({
-                username: result.data.username,
-                role: result.data.role,
-                access_token: result.data.access_token
-            });
+            login(
+              result.data.access_token
+            );
           }
           // user role navigation handling
           const role = result.data.role;
