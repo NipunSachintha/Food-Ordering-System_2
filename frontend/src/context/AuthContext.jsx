@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     Cookies.remove("accessToken");
-    navigate("/login");
+    navigate("/");
   };
 
   const loadUserFromToken = () => {
