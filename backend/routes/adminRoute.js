@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const FoodItem = require('../models/Foodmodel');
 const User = require('../models/UserModel');
+const Order = require('../models/orderModel');
 const authMiddleware = require('../middleware/authMiddleware');
 
 
@@ -97,6 +98,18 @@ router.post("/updateUsers", authMiddleware(['admin']), async (req, res) => {
   } catch (err) {
     console.error('Error updating user:', err);
     res.status(500).json({ message: err.message });
+  }
+});
+
+router.get('/orderDetails',authMiddleware(['admin']) ,async (req, res) => {
+  try {
+    const orders = await Order.find(
+      {isComplete:true},
+      { time: 1, total: 1, "items.name": 1, "items.quantity": 1 , "items.price": 1}
+    );
+    res.json(orders);
+  } catch (err) {
+    res.json({ message: err });
   }
 });
 

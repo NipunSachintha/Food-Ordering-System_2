@@ -137,3 +137,24 @@ export const updateUser = async (data) => {
     throw error;
   }
 };
+
+export const getorderdetails = async () => {
+  const token = Cookies.get("accessToken");
+  if (token) {
+    try {
+      const decodedToken = jwtDecode(token);
+      const response = await axiosInstance.get("/api/admin/orderDetails", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      //console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  } else {
+    console.log("No token found");
+  }
+};
