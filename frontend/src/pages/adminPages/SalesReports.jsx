@@ -1,175 +1,174 @@
-import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Utensils, TrendingUp, DollarSign, BarChart2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { getorderdetails } from '../../actions/AdminActions';
 
-// Extended sample data
-const data = [
-    { date: '2025-02-08', total: 20.95 },
-    { date: '2025-02-09', total: 25.40 },
-    { date: '2025-02-10', total: 18.75 }
-];
+const SalesDashboard = () => {
+  const [timeFilter, setTimeFilter] = useState('day');
+  const [salesData, setSalesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalSales: 0,
+    averageSales: 0,
+    totalOrders: 0,
+    totalItemsSold: 0,
+  });
+  const [itemsData, setItemsData] = useState([]);
 
-const pieData = [
-    { name: 'Sales', value: 20.95 },
-    { name: 'Returns', value: 5.05 }
-];
-
-const topSellingItems = [
-    { name: 'Pizza', quantity: 45, revenue: 675 },
-    { name: 'Burger', quantity: 38, revenue: 418 },
-    { name: 'Salad', quantity: 32, revenue: 384 },
-    { name: 'Pasta', quantity: 28, revenue: 392 }
-];
-
-const COLORS = ['#0088FE', '#FF8042', '#00C49F', '#FFBB28'];
-
-const SalesReports = () => {
-    const [timePeriod, setTimePeriod] = useState('day');
-
-    const handleTimePeriodChange = (event) => {
-        setTimePeriod(event.target.value);
-        // Filter data based on selected time period
-        // Update charts and statistics accordingly
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const data1 = await getorderdetails();
+        processData(data1);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const totalSales = data.reduce((sum, item) => sum + item.total, 0);
-    const averageSales = totalSales / data.length;
+    fetchData();
+  }, [timeFilter]);
 
-    return (
-        <div className="p-6 bg-gray-50 min-h-screen">
-            {/* Time Period Selector */}
-            <div className="mb-6 flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Sales Report</h1>
-                <select
-                    value={timePeriod}
-                    onChange={handleTimePeriodChange}
-                    className="p-2 border rounded"
-                >
-                    <option value="day">Day</option>
-                    <option value="week">Week</option>
-                    <option value="month">Month</option>
-                    <option value="year">Year</option>
-                </select>
-            </div>
+  const processData = (data) => {
+    const now = new Date();
+    let filteredData = [];
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="p-4 bg-white shadow rounded-lg">
-                    <div className="flex items-center space-x-4">
-                        <div className="p-2 bg-blue-100 rounded-full">
-                            <DollarSign className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Total Sales</p>
-                            <h3 className="text-2xl font-bold">${totalSales.toFixed(2)}</h3>
-                        </div>
-                    </div>
-                </div>
+    if (timeFilter === 'day') {
+      filteredData = data.filter(order => new Date(order.time).toDateString() === now.toDateString());
+    } 
+    else if (timeFilter === 'week') {
+      const currentDay = now.getDay();
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
+      monday.setHours(0, 0, 0, 0);
 
-                <div className="p-4 bg-white shadow rounded-lg">
-                    <div className="flex items-center space-x-4">
-                        <div className="p-2 bg-green-100 rounded-full">
-                            <TrendingUp className="h-6 w-6 text-green-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Average Sales</p>
-                            <h3 className="text-2xl font-bold">${averageSales.toFixed(2)}</h3>
-                        </div>
-                    </div>
-                </div>
+      filteredData = data.filter(order => new Date(order.time) >= monday);
+    } 
+    else if (timeFilter === 'month') {
+      filteredData = data.filter(order => {
+        const orderDate = new Date(order.time);
+        return orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
+      });
+    } 
+    else if (timeFilter === 'year') {
+      filteredData = data.filter(order => new Date(order.time).getFullYear() === now.getFullYear());
+    }
 
-                <div className="p-4 bg-white shadow rounded-lg">
-                    <div className="flex items-center space-x-4">
-                        <div className="p-2 bg-purple-100 rounded-full">
-                            <Utensils className="h-6 w-6 text-purple-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Total Orders</p>
-                            <h3 className="text-2xl font-bold">{topSellingItems.reduce((sum, item) => sum + item.quantity, 0)}</h3>
-                        </div>
-                    </div>
-                </div>
+    const totalSales = filteredData.reduce((sum, order) => sum + order.total, 0);
+    const totalOrders = filteredData.length;
+    const averageSales = totalOrders > 0 ? totalSales / totalOrders : 0;
 
-                <div className="p-4 bg-white shadow rounded-lg">
-                    <div className="flex items-center space-x-4">
-                        <div className="p-2 bg-yellow-100 rounded-full">
-                            <BarChart2 className="h-6 w-6 text-yellow-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Items Sold</p>
-                            <h3 className="text-2xl font-bold">{topSellingItems.length}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    const itemMap = new Map();
+    let totalItemsSold = 0;
 
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Sales Distribution */}
-                <div className="p-4 bg-white shadow rounded-lg">
-                    <h2 className="text-lg font-semibold mb-4">Sales Distribution</h2>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                            <Pie
-                                data={pieData}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={100}
-                                fill="#8884d8"
-                                label
-                            >
-                                {pieData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
+    filteredData.forEach(order => {
+      order.items.forEach(item => {
+        totalItemsSold += item.quantity;
 
-                {/* Top Selling Items */}
-                <div className="p-4 bg-white shadow rounded-lg">
-                    <h2 className="text-lg font-semibold mb-4">Top Selling Items</h2>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={topSellingItems}>
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="quantity" fill="#0088FE" name="Quantity Sold" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
+        if (itemMap.has(item.name)) {
+          const existing = itemMap.get(item.name);
+          itemMap.set(item.name, {
+            name: item.name,
+            quantity: existing.quantity + item.quantity,
+            revenue: existing.revenue + (item.price * item.quantity)
+          });
+        } else {
+          itemMap.set(item.name, {
+            name: item.name,
+            quantity: item.quantity,
+            revenue: item.price * item.quantity
+          });
+        }
+      });
+    });
 
-            {/* Top Selling Items Table */}
-            <div className="p-4 bg-white shadow rounded-lg mt-6">
-                <h2 className="text-lg font-semibold mb-4">Detailed Sales Breakdown</h2>
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b">
-                                <th className="text-left p-4">Item</th>
-                                <th className="text-right p-4">Quantity Sold</th>
-                                <th className="text-right p-4">Revenue</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {topSellingItems.map((item, index) => (
-                                <tr key={index} className="border-b hover:bg-gray-50">
-                                    <td className="p-4">{item.name}</td>
-                                    <td className="text-right p-4">{item.quantity}</td>
-                                    <td className="text-right p-4">${item.revenue.toFixed(2)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    setStats({
+      totalSales,
+      averageSales,
+      totalOrders,
+      totalItemsSold,
+    });
+
+    setItemsData(Array.from(itemMap.values()).sort((a, b) => b.quantity - a.quantity));
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64">Loading sales data...</div>;
+  }
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Sales Report</h1>
+        <select 
+          className="border border-gray-300 rounded-md p-2"
+          value={timeFilter}
+          onChange={(e) => setTimeFilter(e.target.value)}
+        >
+          <option value="day">Day</option>
+          <option value="week">Week</option>
+          <option value="month">Month</option>
+          <option value="year">Year</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500">Total Sales</h3>
+          <p className="text-lg font-bold text-gray-800">Rs: {stats.totalSales.toFixed(2)}</p>
         </div>
-    );
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500">Average Sales</h3>
+          <p className="text-lg font-bold text-gray-800">Rs: {stats.averageSales.toFixed(2)}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500">Total Orders</h3>
+          <p className="text-lg font-bold text-gray-800">{stats.totalOrders}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500">Total Items Sold</h3>
+          <p className="text-lg font-bold text-gray-800">{stats.totalItemsSold}</p>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h2 className="text-lg font-semibold mb-4">Sales by Items</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={itemsData}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip formatter={(value) => [`${value}`, 'Quantity Sold']} labelFormatter={(value) => `Item: ${value}`} />
+            <Bar dataKey="quantity" fill="#0088FE" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow-sm mt-8">
+        <h2 className="text-lg font-semibold mb-4">Detailed Sales Breakdown</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity Sold</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {itemsData.map((item, index) => (
+                <tr key={index}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rs: {item.revenue.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
 };
 
-export default SalesReports;
+export default SalesDashboard;
