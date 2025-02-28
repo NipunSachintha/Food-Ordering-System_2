@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getOrders } from "../actions/OrderActions";
 import io from "socket.io-client";
 import {completeOrder} from "../actions/OrderActions";
+import Navbar from "../components/navbar";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -83,6 +84,7 @@ const Kitchen = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      <Navbar />
       <h1 className="text-2xl font-bold mb-6">Kitchen View</h1>
 
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">

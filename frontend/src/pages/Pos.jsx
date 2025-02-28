@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import NewOrderTab from "../components/NewOrderTab.jsx";
 import PreviousOrdersTab from "../components/PreviousOrdersTab.jsx";
+import Navbar from "../components/navbar.jsx";
 function Pos() {
   const [activeTab, setActiveTab] = useState('new');
   
@@ -9,6 +10,7 @@ function Pos() {
 
   return (
     <div className="max-w-7xl mx-auto p-8">
+      <Navbar />
       <div className="mb-8">
         <div className="flex gap-2 mb-8">
           <button
