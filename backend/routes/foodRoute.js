@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const FoodItem = require('../models/Foodmodel');
+const authMiddleware = require('../middleware/authMiddleware');
 
 
 
-router.get('/getFoodItems', async (req, res) => {
+router.get('/getFoodItems',authMiddleware(['admin','cashier']), async (req, res) => {
     //console.log('ok')
     try {
         const foodItems = await FoodItem.find({});
@@ -14,7 +15,7 @@ router.get('/getFoodItems', async (req, res) => {
     }
 });
 
-router.post('/addFoodItem', async (req, res) => {
+router.post('/addFoodItem',authMiddleware(['admin']), async (req, res) => {
     const foodItem = new FoodItem({
         name: req.body.name,
         price: req.body.price,
